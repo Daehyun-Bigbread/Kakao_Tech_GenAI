@@ -1,1 +1,1 @@
-# Kakao_Tech
+# Kakao_Tech_GenAI
