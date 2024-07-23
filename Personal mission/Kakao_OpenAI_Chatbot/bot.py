@@ -1,31 +1,32 @@
+# bot.py
+import os
 import discord
-import openai
-import config
+from dotenv import load_dotenv
+from chatgpt import send_to_chatGpt
 
-# OpenAI API 키 설정
-openai.api_key = config.OPENAI_API_KEY
+# .env 파일에서 환경 변수를 로드
+load_dotenv()
 
-# 디스코드 클라이언트 설정
-intents = discord.Intents.default()
-intents.messages = True
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+
+intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print(f'{client.user.name}로 로그인되었습니다.')
 
 @client.event
 async def on_message(message):
+    # 봇 자신의 메시지는 무시하고 다른 사용자의 메시지만 응답
     if message.author == client.user:
         return
 
-    if message.content.startswith('!질문'):
-        prompt = message.content[len('!질문 '):]
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
-            max_tokens=150
-        )
-        await message.channel.send(response.choices[0].text.strip())
+    # OpenAI API 응답
+    messages = [{"role": "user", "content": message.content}]
+    response = send_to_chatGpt(messages)
+    # 응답을 메시지로 전송
+    await message.channel.send(response)
 
-client.run(config.DISCORD_TOKEN)
+# 봇 시작
+client.run(DISCORD_TOKEN)
